@@ -11,7 +11,6 @@ public class HorsePenGUI extends JFrame {
     private JButton waterBtn = new JButton("Give Water");
     private JButton shelterBtn = new JButton("Give Shelter");
     private JButton feedBtn = new JButton("Give Feed");
-    private JButton doTaskBtn = new JButton("Do Task");
     private JLabel statusLabel = new JLabel();
     private JLabel taskLabel = new JLabel();
     private JPanel horsePanel = new JPanel();
@@ -19,6 +18,8 @@ public class HorsePenGUI extends JFrame {
 
     private Map<Horse, JProgressBar> happinessBars = new HashMap<>();
     private Map<Horse, JProgressBar> hungerBars = new HashMap<>();
+    private Map<Horse, JProgressBar> waterBars = new HashMap<>();
+    private Map<Horse, JProgressBar> shelterBars = new HashMap<>();
 
     public HorsePenGUI() {
         game = new HorseCareGame(this::updateUI);
@@ -41,7 +42,6 @@ public class HorsePenGUI extends JFrame {
         controlPanel.add(waterBtn);
         controlPanel.add(shelterBtn);
         controlPanel.add(feedBtn);
-        controlPanel.add(doTaskBtn);
         middlePanel.add(controlPanel, BorderLayout.NORTH);
 
         horsePanel.setLayout(new BoxLayout(horsePanel, BoxLayout.Y_AXIS));
@@ -60,7 +60,6 @@ public class HorsePenGUI extends JFrame {
         waterBtn.addActionListener(e -> giveResource("water"));
         shelterBtn.addActionListener(e -> giveResource("shelter"));
         feedBtn.addActionListener(e -> giveResource("feed"));
-        doTaskBtn.addActionListener(e -> game.doTask());
         toggleGateBtn.addActionListener(e -> {
             game.getPen().setGateLocked(!game.getPen().isGateLocked());
             updateUI();
@@ -88,9 +87,19 @@ public class HorsePenGUI extends JFrame {
             hunger.setStringPainted(true);
             hungerBars.put(h, hunger);
 
+            JProgressBar water = new JProgressBar(0,100);
+            water.setStringPainted(true);
+            waterBars.put(h, water);
+
+            JProgressBar shelter = new JProgressBar(0,100);
+            shelter.setStringPainted(true);
+            shelterBars.put(h, shelter);
+
             horsePanel.add(new JLabel(h.getName()));
             horsePanel.add(happiness);
             horsePanel.add(hunger);
+            horsePanel.add(water);
+            horsePanel.add(shelter);
             horsePanel.revalidate();
             horsePanel.repaint();
 
@@ -105,6 +114,10 @@ public class HorsePenGUI extends JFrame {
         Horse h = (Horse) horseSelector.getSelectedItem();
         if (h == null) return;
         game.giveResource(h, resource);
+        // Check if this fulfills the current task
+        if (game.getTaskHorse() == h && resource.equals(game.getTaskResource())) {
+            game.clearTask();
+        }
         updateUI();
     }
 
@@ -115,6 +128,8 @@ public class HorsePenGUI extends JFrame {
         for (Horse h : game.getPen().getHorses()) {
             JProgressBar hb = happinessBars.get(h);
             JProgressBar hung = hungerBars.get(h);
+            JProgressBar wb = waterBars.get(h);
+            JProgressBar sb = shelterBars.get(h);
             if (hb != null) {
                 hb.setValue(h.getHappiness());
                 hb.setForeground(h.getHappiness() > 50 ? Color.GREEN : Color.RED);
@@ -124,6 +139,16 @@ public class HorsePenGUI extends JFrame {
                 hung.setValue(h.getHunger());
                 hung.setForeground(h.getHunger() < 50 ? Color.GREEN : Color.RED);
                 hung.setString("Hunger: " + h.getHunger());
+            }
+            if (wb != null) {
+                wb.setValue(h.getWaterLevel());
+                wb.setForeground(h.getWaterLevel() < 50 ? Color.GREEN : Color.RED);
+                wb.setString("Water: " + h.getWaterLevel());
+            }
+            if (sb != null) {
+                sb.setValue(h.getShelterLevel());
+                sb.setForeground(h.getShelterLevel() < 50 ? Color.GREEN : Color.RED);
+                sb.setString("Shelter: " + h.getShelterLevel());
             }
         }
     }
