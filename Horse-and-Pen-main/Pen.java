@@ -29,3 +29,4 @@ class Pen {
     public int getHorseCount() { return horses.size(); }
     public List<Horse> getHorses() { return new ArrayList<>(horses); }
 }
+
