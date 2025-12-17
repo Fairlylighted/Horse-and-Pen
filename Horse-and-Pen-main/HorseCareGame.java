@@ -32,10 +32,12 @@ public class HorseCareGame {
     }
 
     public void giveResource(Horse horse, String resource) {
-        switch (resource) {
-            case "water" -> horse.setHasWater(true);
-            case "shelter" -> horse.setHasShelter(true);
-            case "feed" -> horse.setHasFeed(true);
+        if ("water".equals(resource)) {
+            horse.setWaterLevel(Math.max(0, horse.getWaterLevel() - 30));
+        } else if ("shelter".equals(resource)) {
+            horse.setShelterLevel(Math.max(0, horse.getShelterLevel() - 30));
+        } else if ("feed".equals(resource)) {
+            horse.setHasFeed(true);
         }
         updateUI.run();
     }
@@ -52,14 +54,19 @@ public class HorseCareGame {
         updateUI.run();
     }
 
+    public void clearTask() {
+        taskHorse = null;
+        taskResource = null;
+    }
+
     private void triggerRandomTask() {
         List<Horse> horses = pen.getHorses();
         if (horses.isEmpty()) return;
 
         Horse horse = horses.get(rand.nextInt(horses.size()));
         List<String> needed = new ArrayList<>();
-        if (!horse.hasWater()) needed.add("water");
-        if (!horse.hasShelter()) needed.add("shelter");
+        if (horse.getWaterLevel() > 50) needed.add("water");
+        if (horse.getShelterLevel() > 50) needed.add("shelter");
         if (!horse.hasFeed()) needed.add("feed");
 
         if (needed.isEmpty()) return;
